@@ -1,0 +1,14 @@
+services:
+  openobserve:
+    image: o2cr.ai/openobserve/openobserve-enterprise:latest
+    container_name: openobserve-local-dev
+    restart: unless-stopped
+    ports:
+      - "37652:5080"
+      - "37653:5081"
+    environment:
+      ZO_DATA_DIR: /data
+      ZO_ROOT_USER_EMAIL: root@example.com
+      ZO_ROOT_USER_PASSWORD: Complexpass#123
+    volumes:
+      - ./data:/data
