@@ -48,8 +48,19 @@ OpenObserve stores local state in `repos/ob4dev/data` through the `./data:/data`
 
 ### Backend wiring
 
-Use the local example in `repos/hagicode-core/src/PCode.Web/appsettings.Local.example.yml` to point `PCode.Web` at this instance.
+Use the local example in `repos/hagicode-core/src/PCode.Web/appsettings.Local.example.yml` to point a host-run `PCode.Web` process at this instance.
 
 - UI access stays on host port `37652`
-- OTLP export should use gRPC on host port `37653`
+- Host-run OTLP export should use gRPC on `http://127.0.0.1:37653`
+- Containerized local deployment from `repos/hagicode-core/docker-compose.yml` should use `http://host.docker.internal:37653`
 - The documented OTLP header uses the same administrator credentials shown above
+
+For Docker-based local deployment in `repos/hagicode-core`, enable these environment variables before `docker compose up -d`:
+
+```bash
+export TELEMETRY_OTLP_ENABLED=true
+export TELEMETRY_OTLP_ENDPOINT=http://host.docker.internal:37653
+export TELEMETRY_OTLP_HEADERS='Authorization=Basic cm9vdEBleGFtcGxlLmNvbTpDb21wbGV4cGFzcyMxMjM='
+```
+
+The HagiCode Compose file already maps `host.docker.internal` to the Docker host so Linux containers can still reach this OpenObserve instance through the published host port.
