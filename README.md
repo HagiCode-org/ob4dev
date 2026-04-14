@@ -2,9 +2,9 @@
 
 ## OpenObserve local development
 
-This repository includes a local OpenObserve stack for validating backend telemetry during development.
+This repository includes a local OpenObserve stack for validating backend, AI, agent, and shared runtime telemetry during development.
 
-It also includes ready-to-import dashboard assets under `dashboards/` so you can review backend performance inside OpenObserve instead of building every chart by hand.
+It also includes ready-to-import dashboard assets under `dashboards/` so you can review HagiCode observability signals inside OpenObserve instead of rebuilding charts by hand.
 
 ### Start the stack
 
@@ -75,13 +75,30 @@ Import the dashboard JSON from `repos/ob4dev/dashboards/` after the stack is run
   - `repos/ob4dev/dashboards/hagicode-backend-overview.dashboard.json`
   - `repos/ob4dev/dashboards/hagicode-backend-runtime.dashboard.json`
   - `repos/ob4dev/dashboards/hagicode-backend-database.dashboard.json`
+  - `repos/ob4dev/dashboards/hagicode-ai-overview.dashboard.json`
+  - `repos/ob4dev/dashboards/hagicode-agent-runtime.dashboard.json`
 - Import helper: `repos/ob4dev/scripts/import_dashboards.py`
-- Import guide: `repos/ob4dev/dashboards/README.md`
+- Import and alert guide: `repos/ob4dev/dashboards/README.md`
 
-The bundled dashboards focus on performance signals that are already emitted by the backend telemetry pipeline:
+The bundled dashboards now cover four local troubleshooting views:
 
-- Overview: HTTP throughput, latency, 5xx trends, top routes, and Orleans grain health
+- Backend overview: HTTP throughput, latency, 5xx trends, top routes, and Orleans grain health
 - Runtime: .NET memory, thread-pool pressure, GC activity, and traffic context
 - Database: EF Core command latency, failures, busiest collections, write pressure, and top slow SQL category/table combinations
+- AI and agent runtime: request volume, latency percentiles, token usage, blended cost estimates, normalized errors, tool outcomes, and `Hagicode.Libs` ACP pool pressure
 
-All three dashboards now default to `Last 1 hour` to make local troubleshooting consistent right after import.
+Validate the dashboard bundle before import:
+
+```bash
+cd repos/ob4dev
+python scripts/import_dashboards.py --validate-only
+```
+
+Import or refresh the dashboards through the API:
+
+```bash
+cd repos/ob4dev
+python scripts/import_dashboards.py
+```
+
+All dashboards default to `Last 1 hour` to keep local troubleshooting consistent right after import.

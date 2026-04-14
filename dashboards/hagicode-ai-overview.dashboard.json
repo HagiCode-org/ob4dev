@@ -1,0 +1,422 @@
+{
+  "version": 8,
+  "title": "HagiCode AI Overview",
+  "description": "OpenObserve dashboard for AI request throughput, latency percentiles, error breakdowns, token usage, and blended cost monitoring.",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "AI Overview",
+      "panels": [
+        {
+          "id": "1",
+          "type": "line",
+          "title": "AI Request Throughput",
+          "description": "Overall AI request rate from the normalized terminal outcome counter.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "sum(rate(pcode_ai_request[5m]))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_ai_request",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "requests/s",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 1
+          }
+        },
+        {
+          "id": "2",
+          "type": "line",
+          "title": "AI Failure Rate",
+          "description": "Percent of AI requests that finish as failure or cancelled in the current window.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "100 * sum(rate(pcode_ai_request{outcome=~'failure|cancelled'}[5m])) / clamp_min(sum(rate(pcode_ai_request[5m])), 0.001)",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_ai_request",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "failure %",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 2
+          }
+        },
+        {
+          "id": "3",
+          "type": "line",
+          "title": "AI P95 Latency by Model",
+          "description": "Histogram-derived p95 request latency grouped by normalized model name.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "unit": "ms"
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, histogram_quantile(0.95, sum by (le, model) (rate(pcode_ai_request_duration_bucket[5m]))))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_ai_request_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{model}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 3
+          }
+        },
+        {
+          "id": "4",
+          "type": "line",
+          "title": "AI P99 Latency by Provider and Operation",
+          "description": "Use this panel to spot the slowest provider and operation combinations before drilling into traces.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "unit": "ms"
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, histogram_quantile(0.99, sum by (le, provider, operation) (rate(pcode_ai_request_duration_bucket[5m]))))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_ai_request_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{provider} {operation}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 4
+          }
+        },
+        {
+          "id": "5",
+          "type": "line",
+          "title": "AI Error Breakdown",
+          "description": "Failure classifications emitted by the backend across providers and models.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(10, sum by (error_type, provider) (rate(pcode_ai_error[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_ai_error",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{provider} {error_type}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 28,
+            "w": 96,
+            "h": 14,
+            "i": 5
+          }
+        },
+        {
+          "id": "6",
+          "type": "line",
+          "title": "Token Throughput by Model and Type",
+          "description": "Prompt, completion, cached, and total token rates grouped by model for cost triage.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(12, sum by (model, token_type) (rate(pcode_ai_token_usage[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_ai_token_usage",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{model} {token_type}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 28,
+            "w": 96,
+            "h": 14,
+            "i": 6
+          }
+        },
+        {
+          "id": "7",
+          "type": "line",
+          "title": "Estimated Cost Burn Rate (Blended Example)",
+          "description": "Blended prompt/completion pricing example. Replace the coefficients in the query to match your environment-specific model pricing.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "sum(rate(pcode_ai_token_usage{token_type='prompt'}[5m])) * 0.0000015 + sum(rate(pcode_ai_token_usage{token_type='completion'}[5m])) * 0.0000030",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_ai_token_usage",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "usd/s (example)",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 42,
+            "w": 96,
+            "h": 14,
+            "i": 7
+          }
+        },
+        {
+          "id": "8",
+          "type": "line",
+          "title": "Top Projects by Token Volume",
+          "description": "Project-level drilldown for total token usage. Unknown projects are filtered out to keep the panel actionable.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(10, sum by (project_id) (rate(pcode_ai_token_usage{token_type='total', project_id!='unknown'}[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_ai_token_usage",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{project_id}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 42,
+            "w": 96,
+            "h": 14,
+            "i": 8
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": []
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "1h"
+  }
+}

@@ -1,0 +1,466 @@
+{
+  "version": 8,
+  "title": "HagiCode Agent Runtime",
+  "description": "OpenObserve dashboard for agent lifecycle health, tool outcomes, normalized error classes, and shared ACP pool pressure.",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Agent Runtime",
+      "panels": [
+        {
+          "id": "1",
+          "type": "line",
+          "title": "Agent Lifecycle Rate by Outcome",
+          "description": "Agent starts and terminal outcomes grouped by normalized agent name.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(12, sum by (agent_name, outcome) (rate(pcode_agent_lifecycle[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_agent_lifecycle",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{agent_name} {outcome}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 1
+          }
+        },
+        {
+          "id": "2",
+          "type": "line",
+          "title": "Agent Failure Rate by Agent",
+          "description": "Terminal failure and cancellation rate per agent, excluding the non-terminal start events.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "100 * sum by (agent_name) (rate(pcode_agent_lifecycle{outcome=~'failure|cancelled'}[5m])) / clamp_min(sum by (agent_name) (rate(pcode_agent_lifecycle{outcome=~'success|failure|cancelled'}[5m])), 0.001)",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_agent_lifecycle",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{agent_name}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 2
+          }
+        },
+        {
+          "id": "3",
+          "type": "line",
+          "title": "Agent P95 Duration by Agent",
+          "description": "Histogram-derived p95 execution duration for each agent runtime.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "unit": "ms"
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, histogram_quantile(0.95, sum by (le, agent_name) (rate(pcode_agent_duration_bucket[5m]))))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_agent_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{agent_name}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 3
+          }
+        },
+        {
+          "id": "4",
+          "type": "line",
+          "title": "Agent P99 Duration by Operation",
+          "description": "Longest-running agent operations for spotting degraded orchestration paths.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "unit": "ms"
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, histogram_quantile(0.99, sum by (le, operation) (rate(pcode_agent_duration_bucket[5m]))))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_agent_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{operation}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 4
+          }
+        },
+        {
+          "id": "5",
+          "type": "line",
+          "title": "Tool Outcomes by Agent and Tool",
+          "description": "Terminal tool results grouped by agent and tool name.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(12, sum by (agent_name, tool_name, outcome) (rate(pcode_agent_tool_outcome[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_agent_tool_outcome",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{agent_name} {tool_name} {outcome}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 28,
+            "w": 96,
+            "h": 14,
+            "i": 5
+          }
+        },
+        {
+          "id": "6",
+          "type": "line",
+          "title": "AI and Agent Error Breakdown",
+          "description": "Normalized error types emitted from AI providers and agent runtime instrumentation.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(12, sum by (error_type, agent_name) (rate(pcode_ai_error[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_ai_error",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{agent_name} {error_type}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 28,
+            "w": 96,
+            "h": 14,
+            "i": 6
+          }
+        },
+        {
+          "id": "7",
+          "type": "line",
+          "title": "ACP Pool Entries",
+          "description": "Shared HagiCode.Libs pool gauges for active and leased ACP entries.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "sum(hagicode_cli_acp_session_pool_active_entries)",
+              "customQuery": true,
+              "fields": {
+                "stream": "hagicode_cli_acp_session_pool_active_entries",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "active entries",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            },
+            {
+              "query": "sum(hagicode_cli_acp_session_pool_leased_entries)",
+              "customQuery": true,
+              "fields": {
+                "stream": "hagicode_cli_acp_session_pool_leased_entries",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "leased entries",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 42,
+            "w": 96,
+            "h": 14,
+            "i": 7
+          }
+        },
+        {
+          "id": "8",
+          "type": "line",
+          "title": "ACP Pool Pressure by Provider",
+          "description": "Leased-to-active ratio by provider plus indexed key count for contention triage.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "100 * sum by (provider) (hagicode_cli_acp_session_pool_leased_entries{provider!=''}) / clamp_min(sum by (provider) (hagicode_cli_acp_session_pool_active_entries{provider!=''}), 1)",
+              "customQuery": true,
+              "fields": {
+                "stream": "hagicode_cli_acp_session_pool_leased_entries",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{provider} pressure %",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            },
+            {
+              "query": "sum by (provider) (hagicode_cli_acp_session_pool_indexed_keys{provider!=''})",
+              "customQuery": true,
+              "fields": {
+                "stream": "hagicode_cli_acp_session_pool_indexed_keys",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{provider} indexed keys",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 42,
+            "w": 96,
+            "h": 14,
+            "i": 8
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": []
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "1h"
+  }
+}
