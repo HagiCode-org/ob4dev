@@ -1,0 +1,373 @@
+{
+  "version": 8,
+  "title": "HagiCode Backend Database",
+  "description": "OpenObserve dashboard for EF Core command latency, failures, and the busiest collections.",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Database",
+      "panels": [
+        {
+          "id": "1",
+          "type": "line",
+          "title": "Database Average Latency",
+          "description": "Average latency for EF Core command execution grouped by provider and operation.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "unit": "ms"
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, sum by (db_system, db_operation_name) (rate(pcode_database_command_duration_sum[5m])) / sum by (db_system, db_operation_name) (rate(pcode_database_command_duration_count[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_database_command_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{db_system} {db_operation_name}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 1
+          }
+        },
+        {
+          "id": "2",
+          "type": "line",
+          "title": "Database Errors",
+          "description": "Database command failures grouped by provider and operation.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, sum by (db_system, db_operation_name) (rate(pcode_database_command_duration_count{pcode_execution_status='error'}[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_database_command_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{db_system} {db_operation_name}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 2
+          }
+        },
+        {
+          "id": "3",
+          "type": "line",
+          "title": "Busiest Collections",
+          "description": "Collections or tables receiving the most command volume.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(10, sum by (db_collection_name) (rate(pcode_database_command_duration_count{db_collection_name!=''}[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_database_command_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{db_collection_name}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 3
+          }
+        },
+        {
+          "id": "4",
+          "type": "line",
+          "title": "Write Operation Rate",
+          "description": "Mutation-heavy database activity for insert, update, delete, and upsert style operations.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "sum by (db_operation_name) (rate(pcode_database_command_duration_count{db_operation_name=~'INSERT|UPDATE|DELETE|UPSERT|MERGE'}[5m]))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_database_command_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{db_operation_name}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 4
+          }
+        },
+        {
+          "id": "5",
+          "type": "line",
+          "title": "Database P95 Proxy",
+          "description": "High-latency command families sorted by peak observed latency as a practical local debugging proxy.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "unit": "ms"
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, max by (db_system, db_operation_name) (pcode_database_command_duration))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_database_command_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{db_system} {db_operation_name}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 28,
+            "w": 96,
+            "h": 14,
+            "i": 5
+          }
+        },
+        {
+          "id": "6",
+          "type": "line",
+          "title": "HTTP Error Context",
+          "description": "A context panel to correlate backend request failures with database spikes.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "sum by (http_response_status_code) (rate(http_server_request_duration_count{http_response_status_code=~'5..'}[5m]))",
+              "customQuery": true,
+              "fields": {
+                "stream": "http_server_request_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{http_response_status_code}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 28,
+            "w": 96,
+            "h": 14,
+            "i": 6
+          }
+        },
+        {
+          "id": "7",
+          "type": "line",
+          "title": "Top Slow SQL Categories/Tables",
+          "description": "Ranks the slowest database operation and collection combinations by rolling average latency so hotspots are easier to spot at a glance.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "unit": "ms",
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(10, sum by (db_collection_name, db_operation_name) (rate(pcode_database_command_duration_sum[5m])) / clamp_min(sum by (db_collection_name, db_operation_name) (rate(pcode_database_command_duration_count[5m])), 0.001))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_database_command_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{db_collection_name} {db_operation_name}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 42,
+            "w": 192,
+            "h": 16,
+            "i": 7
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": []
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "1h"
+  }
+}

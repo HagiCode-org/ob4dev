@@ -1,0 +1,322 @@
+{
+  "version": 8,
+  "title": "HagiCode Backend Overview",
+  "description": "High-level OpenObserve dashboard for traffic, latency, grain execution, and top backend routes.",
+  "tabs": [
+    {
+      "tabId": "default",
+      "name": "Overview",
+      "panels": [
+        {
+          "id": "1",
+          "type": "line",
+          "title": "HTTP Request Throughput",
+          "description": "Inbound request volume for the backend over the last window.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "sum(rate(http_server_request_duration_count[5m]))",
+              "customQuery": true,
+              "fields": {
+                "stream": "http_server_request_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "requests/s",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 1
+          }
+        },
+        {
+          "id": "2",
+          "type": "line",
+          "title": "HTTP Average Latency",
+          "description": "Average backend request duration from the OpenTelemetry HTTP server histogram.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "unit": "ms"
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "(sum(rate(http_server_request_duration_sum[5m])) / clamp_min(sum(rate(http_server_request_duration_count[5m])), 0.001)) * 1000",
+              "customQuery": true,
+              "fields": {
+                "stream": "http_server_request_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "avg latency",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 2
+          }
+        },
+        {
+          "id": "3",
+          "type": "line",
+          "title": "HTTP 5xx Rate",
+          "description": "Server-side failure rate grouped by response status code.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "sum by (http_response_status_code) (rate(http_server_request_duration_count{http_response_status_code=~'5..'}[5m]))",
+              "customQuery": true,
+              "fields": {
+                "stream": "http_server_request_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{http_response_status_code}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 3
+          }
+        },
+        {
+          "id": "4",
+          "type": "line",
+          "title": "Top Routes by Throughput",
+          "description": "Routes with the highest traffic. Empty route labels are filtered out.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, sum by (http_route) (rate(http_server_request_duration_count{http_route!=''}[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "http_server_request_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{http_route}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 4
+          }
+        },
+        {
+          "id": "5",
+          "type": "line",
+          "title": "Orleans Grain Average Latency",
+          "description": "Average latency for the custom Orleans grain duration histogram emitted by the backend.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            },
+            "unit": "ms"
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, sum by (pcode_grain_type) (rate(pcode_orleans_grain_duration_sum[5m])) / sum by (pcode_grain_type) (rate(pcode_orleans_grain_duration_count[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_orleans_grain_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{pcode_grain_type}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 0,
+            "y": 28,
+            "w": 96,
+            "h": 14,
+            "i": 5
+          }
+        },
+        {
+          "id": "6",
+          "type": "line",
+          "title": "Orleans Grain Errors",
+          "description": "Erroring grain invocations observed through the custom duration metric labels.",
+          "config": {
+            "show_legends": true,
+            "legends_position": null,
+            "base_map": {
+              "type": "osm"
+            },
+            "map_view": {
+              "zoom": 1,
+              "lat": 0,
+              "lng": 0
+            }
+          },
+          "queryType": "promql",
+          "queries": [
+            {
+              "query": "topk(8, sum by (pcode_grain_type) (rate(pcode_orleans_grain_duration_count{pcode_execution_status='error'}[5m])))",
+              "customQuery": true,
+              "fields": {
+                "stream": "pcode_orleans_grain_duration",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [],
+                "z": [],
+                "filter": {
+                  "type": "list",
+                  "values": [],
+                  "logicalOperator": "AND",
+                  "filterType": "list"
+                }
+              },
+              "config": {
+                "promql_legend": "{pcode_grain_type}",
+                "layer_type": "scatter",
+                "weight_fixed": 1
+              }
+            }
+          ],
+          "layout": {
+            "x": 96,
+            "y": 28,
+            "w": 96,
+            "h": 14,
+            "i": 6
+          }
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": []
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "1h"
+  }
+}
