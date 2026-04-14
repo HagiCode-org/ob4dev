@@ -4,6 +4,8 @@
 
 This repository includes a local OpenObserve stack for validating backend telemetry during development.
 
+It also includes ready-to-import dashboard assets under `dashboards/` so you can review backend performance inside OpenObserve instead of building every chart by hand.
+
 ### Start the stack
 
 Run the stack from `repos/ob4dev`:
@@ -64,3 +66,22 @@ export TELEMETRY_OTLP_HEADERS='Authorization=Basic cm9vdEBleGFtcGxlLmNvbTpDb21wb
 ```
 
 The HagiCode Compose file already maps `host.docker.internal` to the Docker host so Linux containers can still reach this OpenObserve instance through the published host port.
+
+### Dashboards and reports
+
+Import the dashboard JSON from `repos/ob4dev/dashboards/` after the stack is running.
+
+- Dashboard assets:
+  - `repos/ob4dev/dashboards/hagicode-backend-overview.dashboard.json`
+  - `repos/ob4dev/dashboards/hagicode-backend-runtime.dashboard.json`
+  - `repos/ob4dev/dashboards/hagicode-backend-database.dashboard.json`
+- Import helper: `repos/ob4dev/scripts/import_dashboards.py`
+- Import guide: `repos/ob4dev/dashboards/README.md`
+
+The bundled dashboards focus on performance signals that are already emitted by the backend telemetry pipeline:
+
+- Overview: HTTP throughput, latency, 5xx trends, top routes, and Orleans grain health
+- Runtime: .NET memory, thread-pool pressure, GC activity, and traffic context
+- Database: EF Core command latency, failures, busiest collections, write pressure, and top slow SQL category/table combinations
+
+All three dashboards now default to `Last 1 hour` to make local troubleshooting consistent right after import.
